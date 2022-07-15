@@ -25,5 +25,10 @@ type SSTable interface {
 	Save() error
 }
 
+// BloomFilter is a memory efficient probabilistic data structure used to quickly determine if an element might be present in a set
 type BloomFilter interface {
+	// HasKey determines if key could be present in set
+	HasKey(key []byte) bool
+	// Add adds the given key to the bloom filter after hashing it a few times
+	Add(key []byte)
 }

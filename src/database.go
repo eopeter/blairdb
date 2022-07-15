@@ -17,6 +17,15 @@ type blairDb struct {
 	mu                *sync.RWMutex
 }
 
+func (b *blairDb) Read(keySpace string, key []byte) ([]byte, error) {
+	nodeId := b.FindNodeId(key)
+	node := b.partitions[nodeId]
+	if node == nil {
+		return nil, fmt.Errorf("no Node found for hashing key: %d", nodeId)
+	}
+	return node.Read(key)
+}
+
 func (b *blairDb) GetNodes() []Node {
 	//TODO implement me
 	panic("implement me")

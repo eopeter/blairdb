@@ -18,14 +18,30 @@ type node struct {
 	isLeader        bool
 	address         net.IPAddr
 	token           int
-	memTable        internals.MemTable
 	log             internals.WAL
+	memTable        internals.MemTable
+	ssTable         internals.SSTable
+	bloomFilter     internals.BloomFilter
 	maxMemTableSize int
 	mu              *sync.RWMutex
 }
 
 func (n *node) String() string {
 	return n.name
+}
+
+func (n *node) Read(key []byte) ([]byte, error) {
+	// check Bloom Filter
+	if !n.bloomFilter.HasKey(key) {
+		return nil, nil
+	}
+	// check if in memTable
+	b, e := n.memTable.Get(key)
+	if b != nil && e == nil {
+		return b, nil
+	}
+	// check if in SSTable
+	return nil, nil
 }
 
 func (n *node) Write(key, value []byte) error {
@@ -49,6 +65,7 @@ func (n *node) Write(key, value []byte) error {
 	// Write to MemTable
 	n.memTable.Set(key, value)
 	// Add to Bloom Filter
+	n.bloomFilter.Add(key)
 	return nil
 }
 
@@ -87,9 +104,11 @@ func (n *node) GetToken() int {
 func NewNode(token int, maxMemoryMb int) Node {
 	n := &node{
 		token:           token,
-		memTable:        internals.NewMemTable(),
 		maxMemTableSize: maxMemoryMb * 1048576,
 		log:             internals.NewLog(LogFilePath, LogBufferSizeMb),
+		memTable:        internals.NewMemTable(),
+		bloomFilter:     internals.NewBloomFilter(),
+		ssTable:         internals.NewSSTable(),
 		mu:              &sync.RWMutex{},
 	}
 	go func() {

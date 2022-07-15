@@ -6,12 +6,14 @@ type Database interface {
 	GetNodes() []Node
 	FindNodeId(key []byte) int
 	Write(keySpace string, key, value []byte) error
+	Read(keySpace string, key []byte) ([]byte, error)
 	Close() error
 }
 
 type Node interface {
 	String() string
 	Write(key, value []byte) error
+	Read(key []byte) ([]byte, error)
 }
 
 // Hasher is responsible for generating unsigned, 64bit hash of provided byte slice.
