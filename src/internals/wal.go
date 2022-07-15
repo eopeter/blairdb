@@ -47,7 +47,7 @@ func (w *wal) Write(key, value []byte) error {
 	if err != nil {
 		return err
 	}
-	_, err = w.writer.Write(dataBytes)
+	_, err = w.writer.WriteString(string(dataBytes) + "\n")
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (w *wal) Read() ([]fileData, error) {
 	for w.reader.Scan() {
 		var data fileData
 		b := w.reader.Bytes()
-		err := json.Unmarshal(b, data)
+		err := json.Unmarshal(b, &data)
 		if err != nil {
 			return nil, err
 		}
@@ -90,6 +90,7 @@ func NewLog(path string, bufferSizeMb int) WAL {
 	}
 	bufferSize := bufferSizeMb * 1048576
 	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanLines)
 	readBuffer := make([]byte, bufferSize)
 	scanner.Buffer(readBuffer, bufferSize)
 	return &wal{

@@ -11,11 +11,11 @@ import (
 )
 
 func main() {
-	db := database.New(1, 3, 2)
-	err := db.Write([]byte("front"), []byte("world"))
-	if err != nil {
-		log.Fatal(err)
-	}
+	db := database.New(1, 1, 2)
+	//err := db.Write("linde", []byte("blair"), []byte("ochanya"))
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	log.Println("Database Started")

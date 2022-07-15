@@ -5,12 +5,12 @@ type Database interface {
 	RemoveNode(node Node) error
 	GetNodes() []Node
 	FindNodeId(key []byte) int
-	Write(key, value []byte) error
+	Write(keySpace string, key, value []byte) error
 	Close() error
 }
 
 type Node interface {
-	GetToken() int
+	String() string
 	Write(key, value []byte) error
 }
 

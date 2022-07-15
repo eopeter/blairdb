@@ -1,7 +1,6 @@
 package internals
 
 import (
-	"encoding/json"
 	"github.com/huandu/skiplist"
 	"time"
 )
@@ -28,8 +27,8 @@ func (m *memTable) Size() int {
 
 func (m *memTable) Get(key []byte) ([]byte, error) {
 	result := m.entries.Get(key)
-	entry, err := m.getEntry(result.Value)
-	return entry.value, err
+	entry := result.Value.(memTableEntry)
+	return entry.value, nil
 }
 
 func (m *memTable) Set(key, value []byte) bool {
@@ -53,22 +52,14 @@ func (m *memTable) set(key, value []byte, timeStamp int64, delete bool) bool {
 		m.size -= len(key)
 	} else {
 		if existing != nil {
-			r, e := m.getEntry(existing.Value)
-			if e != nil {
-				m.size -= len(r.value)
-				m.size += len(value)
-			}
+			r := existing.Value.(memTableEntry)
+			m.size -= len(r.value)
+			m.size += len(value)
 		} else {
 			m.size += len(key) + len(value) + 16 + 1
 		}
 	}
 	return result != nil
-}
-
-func (m *memTable) getEntry(result interface{}) (memTableEntry, error) {
-	var entry memTableEntry
-	err := json.Unmarshal(result.([]byte), &entry)
-	return entry, err
 }
 
 func NewMemTable() MemTable {

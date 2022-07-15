@@ -14,6 +14,7 @@ const (
 )
 
 type node struct {
+	name            string
 	isLeader        bool
 	address         net.IPAddr
 	token           int
@@ -21,6 +22,10 @@ type node struct {
 	log             internals.WAL
 	maxMemTableSize int
 	mu              *sync.RWMutex
+}
+
+func (n *node) String() string {
+	return n.name
 }
 
 func (n *node) Write(key, value []byte) error {
@@ -62,8 +67,6 @@ func (n *node) Close() error {
 }
 
 func (n *node) rebuildMemTableFromWal() error {
-	n.mu.Lock()
-	defer n.mu.Unlock()
 	if _, err := os.Stat(LogFilePath); errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
@@ -71,7 +74,9 @@ func (n *node) rebuildMemTableFromWal() error {
 	if err != nil {
 		return err
 	}
-	n.memTable.InitFromLogData(data)
+	if data != nil {
+		n.memTable.InitFromLogData(data)
+	}
 	return nil
 }
 
