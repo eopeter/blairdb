@@ -11,7 +11,7 @@ type bloomFilter struct {
 	hashers []hash.Hash64
 }
 
-func (b bloomFilter) Add(key []byte) {
+func (b *bloomFilter) Add(key []byte) {
 	for _, f := range b.hashers {
 		_, _ = f.Write(key)
 		p := f.Sum64() % uint64(len(b.bits))
@@ -19,7 +19,7 @@ func (b bloomFilter) Add(key []byte) {
 	}
 }
 
-func (b bloomFilter) HasKey(key []byte) bool {
+func (b *bloomFilter) HasKey(key []byte) bool {
 	positiveBits := 0
 	for _, f := range b.hashers {
 		_, _ = f.Write(key)

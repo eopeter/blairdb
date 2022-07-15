@@ -12,11 +12,16 @@ import (
 
 func main() {
 	db := database.New(1, 1, 2)
-	err := db.Write("linde", []byte("blair"), []byte("ochanya"))
+	if err := db.Write("linde", []byte("blair"), []byte("ochanya")); err != nil {
+		log.Fatal(err)
+	}
+	data, err := db.Read("linde", []byte("blair"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.Read("linde", []byte("blair"))
+	if data == nil {
+		log.Println("no data found for key")
+	}
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	log.Println("Database Started")
