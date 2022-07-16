@@ -97,6 +97,10 @@ func (n *node) rebuildMemTableFromWal() error {
 	return nil
 }
 
+func (n *node) rebuildBloomFilterFromSSTable() error {
+	return nil
+}
+
 func (n *node) GetToken() int {
 	return n.token
 }
@@ -107,12 +111,19 @@ func NewNode(token int, maxMemoryMb int) Node {
 		maxMemTableSize: maxMemoryMb * 1048576,
 		log:             internals.NewLog(LogFilePath, LogBufferSizeMb),
 		memTable:        internals.NewMemTable(),
-		bloomFilter:     internals.NewBloomFilter(),
+		bloomFilter:     internals.NewBloomFilter(18),
 		ssTable:         internals.NewSSTable(),
 		mu:              &sync.RWMutex{},
 	}
 	go func() {
 		err := n.rebuildMemTableFromWal()
+		if err != nil {
+			return
+		}
+	}()
+
+	go func() {
+		err := n.rebuildBloomFilterFromSSTable()
 		if err != nil {
 			return
 		}
